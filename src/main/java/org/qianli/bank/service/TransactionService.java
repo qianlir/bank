@@ -1,50 +1,36 @@
 package org.qianli.bank.service;
 
 import org.qianli.bank.model.Transaction;
+import org.qianli.bank.repository.TransactionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class TransactionService {
-    //ArrayList多线程不安全，使用Concurrent下的list
-    private static List<Transaction> transactions =new CopyOnWriteArrayList<>();
-    //换成原子类
-    private static AtomicLong nextId = new AtomicLong(1);
+    @Autowired
+    private TransactionRepository transactionRepository;
 
     public List<Transaction> getAllTransactions() {
-        return transactions;
+        return transactionRepository.findAll();
     }
 
     public Transaction createTransaction(Transaction transaction) {
-        transaction.setId(nextId.addAndGet(1));
-        transactions.add(transaction);
-        return transaction;
+        return transactionRepository.save(transaction);
     }
 
     public Optional<Transaction> getTransactionById(Long id) {
-        return transactions.stream()
-                .filter(t -> t.getId().equals(id))
-                .findFirst();
+        return transactionRepository.findById(id);
     }
 
     public Transaction updateTransaction(Long id, Transaction updatedTransaction) {
-        Transaction transaction = getTransactionById(id)
-            .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + id));
-            
-        transaction.setType(updatedTransaction.getType());
-        transaction.setAmount(updatedTransaction.getAmount());
-        transaction.setDescription(updatedTransaction.getDescription());
-        return transaction;
+        updatedTransaction.setId(id);
+        return transactionRepository.update(updatedTransaction);
     }
 
     public void deleteTransaction(Long id) {
-        Transaction transaction = getTransactionById(id)
-            .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + id));
-        transactions.remove(transaction);
+        transactionRepository.deleteById(id);
     }
 }

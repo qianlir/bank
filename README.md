@@ -19,7 +19,6 @@
 - 缓存支持
 - 完善的异常处理
 
-
 ## API文档
 
 ### 交易管理API
@@ -30,24 +29,50 @@
 请求体：
 ```json
 {
-  "id": "交易ID",
   "amount": 100.0,
   "type": "DEPOSIT|WITHDRAWAL",
   "description": "交易描述"
 }
 ```
 
+响应：
+- 201 Created
+- 返回创建的交易信息
+
 #### 获取所有交易
 `GET /api/transactions`
+
+响应：
+- 200 OK
+- 返回所有交易列表
 
 #### 获取单个交易
 `GET /api/transactions/{id}`
 
+响应：
+- 200 OK - 返回交易信息
+- 404 Not Found - 交易不存在
+
 #### 更新交易
 `PUT /api/transactions/{id}`
 
+请求体：
+```json
+{
+  "amount": 200.0,
+  "type": "DEPOSIT|WITHDRAWAL",
+  "description": "更新后的交易描述"
+}
+```
+
+响应：
+- 200 OK - 返回更新后的交易信息
+
 #### 删除交易
 `DELETE /api/transactions/{id}`
+
+响应：
+- 204 No Content
 
 ## 构建和运行
 
@@ -77,8 +102,6 @@ docker-compose build
 ```bash
 docker-compose up
 ```
-
-
 
 ## 性能优化
 - 使用内存缓存提高查询性能
@@ -112,7 +135,6 @@ docker-compose up
 2. 20个线程连续执行：
    - 查询所有交易
 
-
 ### 压力测试
 - 硬件配置：
   - CPU：xx核
@@ -125,7 +147,6 @@ docker-compose up
 ### 性能结果
 ![alt text](jmeter/image.png)
 ![alt text](jmeter/image-1.png)
-
 
 ## 依赖库
 - Spring Boot Starter Web

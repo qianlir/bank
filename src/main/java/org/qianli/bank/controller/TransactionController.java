@@ -14,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/transactions")
-//CORS Missing Allow Origin, Missing Allow Methods, Missing Allow Headers
 @CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
 public class TransactionController {
     private static final Logger logger = LoggerFactory.getLogger(TransactionController.class);
@@ -39,18 +38,24 @@ public class TransactionController {
     }
 
     @GetMapping("/{id}")
-    public Transaction getTransactionById(@PathVariable Long id) {
+    public ResponseEntity<Transaction> getTransactionById(@PathVariable Long id) {
+        logger.info("Fetching transaction with id: {}", id);
         return transactionService.getTransactionById(id)
-                .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + id));
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @PutMapping("/{id}")
-    public Transaction updateTransaction(@PathVariable Long id, @RequestBody Transaction transaction) {
-        return transactionService.updateTransaction(id, transaction);
+    public ResponseEntity<Transaction> updateTransaction(@PathVariable Long id, @RequestBody Transaction transaction) {
+        logger.info("Updating transaction with id: {}", id);
+        Transaction updatedTransaction = transactionService.updateTransaction(id, transaction);
+        return ResponseEntity.ok(updatedTransaction);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteTransaction(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
+        logger.info("Deleting transaction with id: {}", id);
         transactionService.deleteTransaction(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
