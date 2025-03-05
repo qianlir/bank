@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  backend:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile-backend
+    ports:
+      - "8088:8080"
+    networks:
+      - bank-network
+
+  frontend:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile-frontend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+    networks:
+      - bank-network
+
+networks:
+  bank-network:
+    driver: bridge
