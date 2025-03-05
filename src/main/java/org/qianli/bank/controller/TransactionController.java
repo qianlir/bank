@@ -14,6 +14,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/transactions")
+//CORS Missing Allow Origin, Missing Allow Methods, Missing Allow Headers
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
 public class TransactionController {
     private static final Logger logger = LoggerFactory.getLogger(TransactionController.class);
     private final TransactionService transactionService;

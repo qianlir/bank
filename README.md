@@ -78,10 +78,7 @@ docker-compose build
 docker-compose up
 ```
 
-### Kubernetes部署
-```bash
-kubectl apply -f k8s-deployment.yaml
-```
+
 
 ## 性能优化
 - 使用内存缓存提高查询性能
@@ -126,8 +123,8 @@ kubectl apply -f k8s-deployment.yaml
   - 超时时间：5s
 
 ### 性能结果
-![alt text](image.png)
-![alt text](image-1.png)
+![alt text](jmeter/image.png)
+![alt text](jmeter/image-1.png)
 
 
 ## 依赖库

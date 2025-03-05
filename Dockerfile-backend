@@ -3,8 +3,11 @@
 FROM maven:3.9.9-eclipse-temurin-21-jammy AS backend-builder
 WORKDIR /app
 COPY pom.xml .
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn -B dependency:go-offline
 COPY src ./src
-RUN mvn clean package
+#RUN mvn clean package
+RUN --mount=type=cache,target=/root/.m2 mvn clean package -Dmaven.test.skip=true
 
 # 第二阶段：运行
 FROM openjdk:21-slim
