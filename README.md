@@ -61,18 +61,7 @@ A modern banking transaction management application built with Java 21 and Sprin
    - Node.js 18+ (for frontend)
    - Docker (optional)
 
-2. **Clone the repository**:
-   ```bash
-   git clone https://github.com/your-repo/bank-transaction-system.git
-   cd bank-transaction-system
-   ```
 
-3. **Build the application**:
-   ```bash
-   mvn clean install
-   cd frontend
-   npm install
-   ```
 
 ## Running the Application
 
@@ -117,10 +106,7 @@ The application is fully containerized with Docker:
 - **Frontend**: Nginx with React build
 - **Database**: In-memory (no external database required)
 
-### Kubernetes Deployment
-```bash
-kubectl apply -f k8s/
-```
+
 
 ## Caching Implementation (TBD)
 
