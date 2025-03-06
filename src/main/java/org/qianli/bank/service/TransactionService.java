@@ -64,9 +64,9 @@ public class TransactionService {
     }
 
     private void validateTransaction(Transaction transaction) {
-        if (transaction.getAmount() == null || transaction.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Amount must be greater than 0");
-        }
+        // if (transaction.getAmount() == null || transaction.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+        //     throw new IllegalArgumentException("Amount must be greater than 0");
+        // }
     }
 
     private void handleDeposit(Transaction transaction) {
@@ -127,7 +127,15 @@ public class TransactionService {
     private static final ConcurrentHashMap<String, Lock> accountLocks = new ConcurrentHashMap<>();
 
     private void acquireLocks(String fromAccount, String toAccount) {
-        // 确定锁的获取顺序
+        //需要使用分布式锁或db账户行锁，当前仅模拟
+
+        if(fromAccount==null){
+            acquireLocks(toAccount);
+            return;
+        }else if(toAccount==null){
+            acquireLocks(fromAccount);
+            return;
+        }
         String firstAccount = fromAccount.compareTo(toAccount) < 0 ? fromAccount : toAccount;
         String secondAccount = fromAccount.compareTo(toAccount) < 0 ? toAccount : fromAccount;
 
@@ -147,6 +155,13 @@ public class TransactionService {
     }
 
     private void releaseLocks(String fromAccount, String toAccount) {
+        if(fromAccount==null){
+            releaseLocks(toAccount);
+            return;
+        }else if(toAccount==null){
+            releaseLocks(fromAccount);
+            return;
+        }
         // 确定锁的释放顺序（必须与获取顺序相反）
         String firstAccount = fromAccount.compareTo(toAccount) < 0 ? fromAccount : toAccount;
         String secondAccount = fromAccount.compareTo(toAccount) < 0 ? toAccount : fromAccount;
@@ -162,16 +177,62 @@ public class TransactionService {
         }
     }
 
+    
+    private void acquireLocks(String account) {
+        //需要使用分布式锁或db账户行锁，当前仅模拟
+
+        // 获取或创建锁对象（线程安全）
+        Lock firstLock = accountLocks.computeIfAbsent(account, k -> new ReentrantLock());
+
+        // 按顺序获取锁
+        firstLock.lock();
+        
+    }
+
+    private void releaseLocks(String account) {
+        Lock firstLock = accountLocks.get(account);
+
+        if (firstLock != null) {
+            firstLock.unlock();
+        }
+    }
+
     public Optional<Transaction> getTransactionById(Long id) {
         return transactionRepository.findById(id);
     }
 
     public Transaction updateTransaction(Long id, Transaction updatedTransaction) {
-        updatedTransaction.setId(id);
-        return transactionRepository.update(updatedTransaction);
+        //获取原来的交易
+        Transaction transaction = transactionRepository.findById(id).orElseThrow(() -> new RuntimeException("Transaction not found"));
+        //获取与当前的交易的差额，生成一条差额交易，金额可以为负数
+        Transaction differenceTransaction = new Transaction();
+        //bigdecimal的减法
+        //differenceTransaction.setAmount(updatedTransaction.getAmount() - transaction.getAmount());
+        differenceTransaction.setAmount(updatedTransaction.getAmount().subtract(transaction.getAmount()));
+        differenceTransaction.setFromAccountNumber(updatedTransaction.getFromAccountNumber());
+        differenceTransaction.setToAccountNumber(updatedTransaction.getToAccountNumber());
+        differenceTransaction.setType(updatedTransaction.getType());
+        differenceTransaction.setTimestamp(java.time.LocalDateTime.now());
+        differenceTransaction.setDescription(updatedTransaction.getDescription());
+        //TODO 此处为事务，需要回滚
+        transaction.setModifyFlg("1");
+        transactionRepository.update(transaction);
+        return  createTransaction(differenceTransaction);
     }
 
     public void deleteTransaction(Long id) {
-        transactionRepository.deleteById(id);
+        // transactionRepository.deleteById(id);
+        //删除即插入一条新的交易，金额为负数
+        Transaction transaction = transactionRepository.findById(id).orElseThrow(() -> new RuntimeException("Transaction not found"));
+        Transaction differenceTransaction = new Transaction();
+        differenceTransaction.setAmount(transaction.getAmount().negate());
+        differenceTransaction.setFromAccountNumber(transaction.getFromAccountNumber());
+        differenceTransaction.setToAccountNumber(transaction.getToAccountNumber());
+        differenceTransaction.setType(transaction.getType());
+        differenceTransaction.setTimestamp(java.time.LocalDateTime.now());
+        //TODO 此处为事务，需要回滚
+        transaction.setModifyFlg("1");
+        transactionRepository.update(transaction);
+        createTransaction(differenceTransaction);
     }
 }

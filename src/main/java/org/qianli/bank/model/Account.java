@@ -2,7 +2,9 @@ package org.qianli.bank.model;
 
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
+import lombok.Data;
 
+@Data
 public class Account {
    
     // 账户ID
@@ -33,38 +35,6 @@ public class Account {
         this.balance = balance;
     }
 
-    // Getters and setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getAccountNumber() {
-        return accountNumber;
-    }
-
-    public void setAccountNumber(String accountNumber) {
-        this.accountNumber = accountNumber;
-    }
-
-    public String getAccountHolder() {
-        return accountHolder;
-    }
-
-    public void setAccountHolder(String accountHolder) {
-        this.accountHolder = accountHolder;
-    }
-
-    public BigDecimal getBalance() {
-        return balance;
-    }
-
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
-    }
 
     @Override
     public String toString() {

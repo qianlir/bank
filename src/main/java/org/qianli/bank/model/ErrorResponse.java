@@ -1,7 +1,9 @@
 package org.qianli.bank.model;
 
 import java.time.LocalDateTime;
+import lombok.Data;
 
+@Data
 public class ErrorResponse {
     private LocalDateTime timestamp;
     private String message;
@@ -13,15 +15,4 @@ public class ErrorResponse {
         this.details = details;
     }
 
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public String getDetails() {
-        return details;
-    }
 }

@@ -41,7 +41,11 @@ function TransactionManagement() {
       try {
         const response = await axios.get('http://localhost:8080/api/accounts');
         if (response.data && Array.isArray(response.data)) {
-          setAccounts(response.data);
+          // 按账户号排序
+          const sortedAccounts = response.data.sort((a, b) => 
+            a.accountNumber.localeCompare(b.accountNumber)
+          );
+          setAccounts(sortedAccounts);
         } else {
           console.error('获取的账户数据格式不正确');
           setAccounts([]);
@@ -110,11 +114,11 @@ function TransactionManagement() {
       setTransactions(response.data);
       // 清空表单
       setTransactionForm({
-    fromAccountNumber: '',
-    toAccountNumber: '',
-    type: 'TRANSFER',
-    amount: '',
-    description: ''
+        fromAccountNumber: '',
+        toAccountNumber: '',
+        type: 'TRANSFER',
+        amount: '',
+        description: ''
       });
     } catch (error) {
       console.error('创建交易失败:', error);
@@ -126,6 +130,51 @@ function TransactionManagement() {
     setPage(value);
   };
 
+  // 处理交易更新
+  const handleUpdate = async (id) => {
+    try {
+      const transaction = transactions.find(t => t.id === id);
+      if (!transaction) return;
+
+      const updatedTransaction = {
+        ...transaction,
+        amount: parseFloat(prompt('请输入新的金额', transaction.amount)),
+        description: prompt('请输入新的备注', transaction.description)
+      };
+
+      await axios.put(`http://localhost:8080/api/transactions/${id}`, updatedTransaction);
+      
+      // 刷新交易列表
+      const response = await axios.get('http://localhost:8080/api/transactions', {
+        params: {
+          page: page - 1,
+          size: rowsPerPage
+        }
+      });
+      setTransactions(response.data);
+    } catch (error) {
+      console.error('更新交易失败:', error);
+    }
+  };
+
+  // 处理交易删除
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8080/api/transactions/${id}`);
+      
+      // 刷新交易列表
+      const response = await axios.get('http://localhost:8080/api/transactions', {
+        params: {
+          page: page - 1,
+          size: rowsPerPage
+        }
+      });
+      setTransactions(response.data);
+    } catch (error) {
+      console.error('删除交易失败:', error);
+    }
+  };
+
   return (
     <Container maxWidth="lg">
       {/* 交易创建表单 */}
@@ -133,8 +182,87 @@ function TransactionManagement() {
         <Typography variant="h6" gutterBottom>
           创建交易
         </Typography>
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6}>
+        
+        {/* 交易类型 */}
+        <Box sx={{ mb: 2 }}>
+          <Select
+            fullWidth
+            name="type"
+            value={transactionForm.type}
+            onChange={handleFormChange}
+            required
+          >
+            <MenuItem value="TRANSFER">转账</MenuItem>
+            <MenuItem value="DEPOSIT">存款</MenuItem>
+            <MenuItem value="WITHDRAWAL">取款</MenuItem>
+          </Select>
+        </Box>
+
+        {/* 账户选择 */}
+        {transactionForm.type === 'TRANSFER' && (
+          <>
+            <Box sx={{ mb: 2 }}>
+              <Select
+                fullWidth
+                name="fromAccountNumber"
+                value={transactionForm.fromAccountNumber}
+                onChange={handleFormChange}
+                required
+              >
+                <MenuItem value="">选择转出账户</MenuItem>
+                {accounts.length > 0 ? (
+                  accounts.map(account => (
+                    <MenuItem key={account.accountNumber} value={account.accountNumber}>
+                      {account.accountNumber} - {account.accountHolder}
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem disabled>
+                    无可用账户
+                  </MenuItem>
+                )}
+              </Select>
+            </Box>
+            <Box sx={{ mb: 2 }}>
+              <Select
+                fullWidth
+                name="toAccountNumber"
+                value={transactionForm.toAccountNumber}
+                onChange={handleFormChange}
+                required
+              >
+                <MenuItem value="">选择转入账户</MenuItem>
+                {accounts.map(account => (
+                  <MenuItem key={account.accountNumber} value={account.accountNumber}>
+                    {account.accountNumber} - {account.accountHolder}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Box>
+          </>
+        )}
+
+        {transactionForm.type === 'DEPOSIT' && (
+          <Box sx={{ mb: 2 }}>
+            <Select
+              fullWidth
+              name="toAccountNumber"
+              value={transactionForm.toAccountNumber}
+              onChange={handleFormChange}
+              required
+            >
+              <MenuItem value="">选择存入账户</MenuItem>
+              {accounts.map(account => (
+                <MenuItem key={account.accountNumber} value={account.accountNumber}>
+                  {account.accountNumber} - {account.accountHolder}
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
+        )}
+
+        {transactionForm.type === 'WITHDRAWAL' && (
+          <Box sx={{ mb: 2 }}>
             <Select
               fullWidth
               name="fromAccountNumber"
@@ -142,7 +270,7 @@ function TransactionManagement() {
               onChange={handleFormChange}
               required
             >
-              <MenuItem value="">选择转出账户</MenuItem>
+              <MenuItem value="">选择取款账户</MenuItem>
               {accounts.length > 0 ? (
                 accounts.map(account => (
                   <MenuItem key={account.accountNumber} value={account.accountNumber}>
@@ -155,62 +283,36 @@ function TransactionManagement() {
                 </MenuItem>
               )}
             </Select>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Select
-              fullWidth
-              name="toAccountNumber"
-              value={transactionForm.toAccountNumber}
-              onChange={handleFormChange}
-              required
-            >
-              <MenuItem value="">选择转入账户</MenuItem>
-              {accounts.map(account => (
-                <MenuItem key={account.accountNumber} value={account.accountNumber}>
-                  {account.accountNumber} - {account.accountHolder}
-                </MenuItem>
-              ))}
-            </Select>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Select
-              fullWidth
-              name="type"
-              value={transactionForm.type}
-              onChange={handleFormChange}
-              required
-            >
-              <MenuItem value="TRANSFER">转账</MenuItem>
-              <MenuItem value="DEPOSIT">存款</MenuItem>
-              <MenuItem value="WITHDRAWAL">取款</MenuItem>
-            </Select>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <TextField
-              fullWidth
-              name="amount"
-              label="金额"
-              type="number"
-              value={transactionForm.amount}
-              onChange={handleFormChange}
-              required
-            />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <TextField
-              fullWidth
-              name="description"
-              label="备注"
-              value={transactionForm.description}
-              onChange={handleFormChange}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Button type="submit" variant="contained" color="primary">
-              提交交易
-            </Button>
-          </Grid>
-        </Grid>
+          </Box>
+        )}
+
+        {/* 金额 */}
+        <Box sx={{ mb: 2 }}>
+          <TextField
+            fullWidth
+            name="amount"
+            label="金额"
+            type="number"
+            value={transactionForm.amount}
+            onChange={handleFormChange}
+            required
+          />
+        </Box>
+
+        {/* 备注 */}
+        <Box sx={{ mb: 2 }}>
+          <TextField
+            fullWidth
+            name="description"
+            label="备注"
+            value={transactionForm.description}
+            onChange={handleFormChange}
+          />
+        </Box>
+
+        <Button type="submit" variant="contained" color="primary">
+          提交交易
+        </Button>
       </Box>
 
       {/* 账户信息一览 */}
@@ -255,18 +357,19 @@ function TransactionManagement() {
                   <TableCell>备注</TableCell>
                   <TableCell>转出账户</TableCell>
                   <TableCell>转入账户</TableCell>
+                  <TableCell>操作</TableCell>
                 </TableRow>
             </TableHead>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">
+                  <TableCell colSpan={7} align="center">
                     加载中...
                   </TableCell>
                 </TableRow>
               ) : error ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">
+                  <TableCell colSpan={7} align="center">
                     加载交易数据失败
                   </TableCell>
                 </TableRow>
@@ -281,13 +384,36 @@ function TransactionManagement() {
                     </TableCell>
                     <TableCell>¥{transaction.amount.toLocaleString()}</TableCell>
                     <TableCell>{transaction.description}</TableCell>
-                    <TableCell>{transaction.fromAccountNumber	}</TableCell>
-                    <TableCell>{transaction.toAccountNumber	}</TableCell>
+                    <TableCell>{transaction.fromAccountNumber}</TableCell>
+                    <TableCell>{transaction.toAccountNumber}</TableCell>
+                    <TableCell>
+                      {transaction.modifyFlg === '0' ? (
+    <>
+      <Button
+        variant="contained"
+        color="primary"
+        size="small"
+        onClick={() => handleUpdate(transaction.id)}
+        sx={{ mr: 1 }}
+      >
+        更新
+      </Button>
+      <Button
+        variant="contained"
+        color="error"
+        size="small"
+        onClick={() => handleDelete(transaction.id)}
+      >
+        删除
+      </Button>
+    </>
+  ) : null}
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">
+                  <TableCell colSpan={7} align="center">
                     暂无交易记录
                   </TableCell>
                 </TableRow>

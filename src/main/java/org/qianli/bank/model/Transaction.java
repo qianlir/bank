@@ -8,6 +8,9 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import lombok.Data;
+
+@Data
 public class Transaction {
 
     public enum Type {
@@ -48,6 +51,8 @@ public class Transaction {
 
     private String fromAccountNumber; // 转出账户
     private String toAccountNumber;   // 转入账户
+    //仅可为1或0，1表示该记录被更新过，0表示该记录未被更新过
+    private String modifyFlg="0"; // 删除标志,一条记录被更新和删除过一次之后，不可再次更新
 
     @Override
     public String toString() {
@@ -62,60 +67,5 @@ public class Transaction {
                 '}';
     }
 
-    // Getters and setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public String getFromAccountNumber() {
-        return fromAccountNumber;
-    }
-
-    public void setFromAccountNumber(String fromAccountNumber) {
-        this.fromAccountNumber = fromAccountNumber;
-    }
-
-    public String getToAccountNumber() {
-        return toAccountNumber;
-    }
-
-    public void setToAccountNumber(String toAccountNumber) {
-        this.toAccountNumber = toAccountNumber;
-    }
+  
 }
