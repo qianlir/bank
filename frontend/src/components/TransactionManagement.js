@@ -26,7 +26,7 @@ function TransactionManagement() {
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
-  const [rowsPerPage] = useState(10);
+  const [rowsPerPage] = useState(5);
   const [transactionForm, setTransactionForm] = useState({
     fromAccountNumber: '',
     toAccountNumber: '',
@@ -66,9 +66,12 @@ function TransactionManagement() {
           size: rowsPerPage
         }
       });
+
+      const totalPages = await axios.get('http://localhost:8080/api/transactions/count');
+      console.log(totalPages);
       console.log(response.data);
       setTransactions(response.data || []);
-      setTotalPages(response.data.totalPages || 1);
+      setTotalPages(totalPages || 1);
     } catch (error) {
       console.error('获取交易数据失败:', error);
       setError(error);

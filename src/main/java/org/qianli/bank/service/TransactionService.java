@@ -235,4 +235,8 @@ public class TransactionService {
         transactionRepository.update(transaction);
         createTransaction(differenceTransaction);
     }
+
+    public int getTransactionCount() {
+        return transactionRepository.getTransactionCount();
+    }
 }

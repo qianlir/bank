@@ -11,4 +11,5 @@ public interface TransactionRepository {
     Transaction save(Transaction transaction);
     void deleteById(Long id);
     Transaction update(Transaction transaction);
+    int getTransactionCount();
 }

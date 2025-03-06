@@ -76,6 +76,23 @@ public class TransactionController {
     }
 
     /**
+     * Get total count of transactions
+     * 
+     * @return Total number of transactions
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Integer> getTransactionCount() {
+        logger.info("Fetching total transaction count");
+        try {
+            int count = transactionService.getTransactionCount();
+            return new ResponseEntity<>(count, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error("Error fetching transaction count: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(-1);
+        }
+    }
+
+    /**
      * Get a transaction by ID
      * 
      * @param id Transaction ID

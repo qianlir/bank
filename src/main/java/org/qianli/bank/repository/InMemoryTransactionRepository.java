@@ -73,4 +73,9 @@ public class InMemoryTransactionRepository implements TransactionRepository {
         existing.setDescription(transaction.getDescription());
         return existing;
     }
+
+    @Override
+    public int getTransactionCount() {
+        return this.transactions.size();
+    }
 }

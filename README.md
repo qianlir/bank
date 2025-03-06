@@ -200,3 +200,5 @@ Example response:
 ## License
 
 xxxxx
+
+![alt text](tradeSystem.png)
