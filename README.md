@@ -65,7 +65,7 @@ A modern banking transaction management application built with Java 21 and Sprin
 
 ## Running the Application
 
-### Development Mode
+### Local Mode
 ```bash
 # Start backend
 mvn spring-boot:run
@@ -75,7 +75,7 @@ cd frontend
 npm start
 ```
 
-### Production Mode with Docker
+### Dev Mode with Docker
 ```bash
 docker-compose up --build
 ```
