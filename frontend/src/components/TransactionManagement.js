@@ -36,53 +36,59 @@ function TransactionManagement() {
   });
 
   // 获取账户数据
-  useEffect(() => {
-    const fetchAccounts = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/api/accounts');
-        if (response.data && Array.isArray(response.data)) {
-          // 按账户号排序
-          const sortedAccounts = response.data.sort((a, b) => 
-            a.accountNumber.localeCompare(b.accountNumber)
-          );
-          setAccounts(sortedAccounts);
-        } else {
-          console.error('获取的账户数据格式不正确');
-          setAccounts([]);
-        }
-      } catch (error) {
-        console.error('获取账户数据失败:', error);
+  const fetchAccounts = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/api/accounts');
+      if (response.data && Array.isArray(response.data)) {
+        // 按账户号排序
+        const sortedAccounts = response.data.sort((a, b) => 
+          a.accountNumber.localeCompare(b.accountNumber)
+        );
+        setAccounts(sortedAccounts);
+      } else {
+        console.error('获取的账户数据格式不正确');
         setAccounts([]);
       }
-    };
-    fetchAccounts();
-  }, []);
+    } catch (error) {
+      console.error('获取账户数据失败:', error);
+      setAccounts([]);
+    }
+  };
 
   // 获取交易数据
+  const fetchTransactions = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get('http://localhost:8080/api/transactions', {
+        params: {
+          page: page - 1,
+          size: rowsPerPage
+        }
+      });
+      console.log(response.data);
+      setTransactions(response.data || []);
+      setTotalPages(response.data.totalPages || 1);
+    } catch (error) {
+      console.error('获取交易数据失败:', error);
+      setError(error);
+      setTransactions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 刷新数据
+  const refreshData = async () => {
+    await fetchAccounts();
+    await fetchTransactions();
+  };
+
+  // 初始化数据
   useEffect(() => {
-    const fetchTransactions = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await axios.get('http://localhost:8080/api/transactions', {
-          params: {
-            page: page - 1,
-            size: rowsPerPage
-          }
-        });
-        console.log(response.data);
-        setTransactions(response.data || []);
-        setTotalPages(response.data.totalPages || 1);
-      } catch (error) {
-        console.error('获取交易数据失败:', error);
-        setError(error);
-        setTransactions([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchTransactions();
+    refreshData();
   }, [page, rowsPerPage]);
+
 
   // 处理表单变化
   const handleFormChange = (e) => {
@@ -104,14 +110,8 @@ function TransactionManagement() {
         toAccountNumber: transactionForm.toAccountNumber,
         timestamp: new Date().toISOString()
       });
-      // 刷新交易列表
-      const response = await axios.get('http://localhost:8080/api/transactions', {
-        params: {
-          page: page - 1,
-          size: rowsPerPage
-        }
-      });
-      setTransactions(response.data);
+      // 刷新数据
+      await refreshData();
       // 清空表单
       setTransactionForm({
         fromAccountNumber: '',
@@ -143,15 +143,8 @@ function TransactionManagement() {
       };
 
       await axios.put(`http://localhost:8080/api/transactions/${id}`, updatedTransaction);
-      
-      // 刷新交易列表
-      const response = await axios.get('http://localhost:8080/api/transactions', {
-        params: {
-          page: page - 1,
-          size: rowsPerPage
-        }
-      });
-      setTransactions(response.data);
+      // 刷新数据
+      await refreshData();
     } catch (error) {
       console.error('更新交易失败:', error);
     }
@@ -161,15 +154,8 @@ function TransactionManagement() {
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:8080/api/transactions/${id}`);
-      
-      // 刷新交易列表
-      const response = await axios.get('http://localhost:8080/api/transactions', {
-        params: {
-          page: page - 1,
-          size: rowsPerPage
-        }
-      });
-      setTransactions(response.data);
+      // 刷新数据
+      await refreshData();
     } catch (error) {
       console.error('删除交易失败:', error);
     }

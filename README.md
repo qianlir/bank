@@ -122,13 +122,13 @@ The application is fully containerized with Docker:
 kubectl apply -f k8s/
 ```
 
-## Caching Implementation
+## Caching Implementation (TBD)
 
 The system uses Spring Cache with Caffeine for:
 
 - Frequently accessed transaction data
 - Account information
-- API response caching
+- API response caching 
 
 Cache configuration can be adjusted in `application.properties`:
 ```properties
@@ -196,18 +196,6 @@ Example response:
 }
 ```
 
-## Future Improvements
-
-- Add transaction categorization
-- Implement transaction history export
-- Add support for recurring transactions
-- Implement transaction approval workflow
-- Add support for multiple currencies
-- Implement transaction notifications
-- Add support for transaction templates
-- Implement transaction search and filtering
-- Add support for transaction attachments
-- Implement transaction reporting
 
 ## License
 
