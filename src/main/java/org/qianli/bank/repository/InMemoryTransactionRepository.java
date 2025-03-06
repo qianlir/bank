@@ -17,8 +17,31 @@ public class InMemoryTransactionRepository implements TransactionRepository {
     private final AtomicLong nextId = new AtomicLong(1);
 
     @Override
-    public List<Transaction> findAll() {
-        return new ArrayList<>(transactions);
+    public List<Transaction> findAll(int page, int size, String type, String accountId) {
+        //暂时每次拷贝下所有数组，后续优化
+        List<Transaction> result = new ArrayList<>(transactions);
+        
+        // Apply filters
+        if (type != null && !type.isEmpty()) {
+            result = result.stream()
+                .filter(t -> t.getType().toString().equalsIgnoreCase(type))
+                .toList();
+        }
+        
+        if (accountId != null && !accountId.isEmpty()) {
+            result = result.stream()
+                .filter(t -> accountId.equals(t.getFromAccountNumber()) || accountId.equals(t.getToAccountNumber()))
+                .toList();
+        }
+        
+        // Apply pagination
+        int start = page * size;
+        if (start >= result.size()) {
+            return List.of();
+        }
+        
+        int end = Math.min(start + size, result.size());
+        return result.subList(start, end);
     }
 
     @Override

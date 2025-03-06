@@ -39,7 +39,7 @@ public class TransactionControllerTest {
         testTransaction = new Transaction();
         testTransaction.setId(1L);
         testTransaction.setAmount(new BigDecimal("100.00"));
-        testTransaction.setType("DEPOSIT");
+        testTransaction.setType(Transaction.Type.DEPOSIT);
         testTransaction.setDescription("Test transaction");
     }
 
@@ -73,10 +73,10 @@ public class TransactionControllerTest {
 
     @Test
     void getAllTransactions_shouldReturnTransactionList() throws Exception {
-        given(transactionService.getAllTransactions())
+        given(transactionService.getAllTransactions(0, 10, "DEPOSIT", "12345"))
             .willReturn(Arrays.asList(testTransaction));
 
-        mockMvc.perform(get("/api/transactions"))
+        mockMvc.perform(get("/api/transactions?page=0&size=10&type=DEPOSIT&accountId=12345"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].id").value(testTransaction.getId()))
             .andExpect(jsonPath("$[0].amount").value(100.0))
